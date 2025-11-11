@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  # 1. WEB SERVICE (Django + Gunicorn)
+  web:
+    build: .
+    container_name: django_app
+    # Entrypoint waits for DB, runs necessary commands, then starts Gunicorn
+    entrypoint: /bin/sh -c "while ! pg_isready -h db -p 5432 > /dev/null; do echo 'Waiting for database...'; sleep 2; done; python manage.py collectstatic --noinput; python manage.py migrate --noinput; gunicorn my_project.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - ./project_app:/usr/src/app/
+    depends_on:
+      - db
+    expose:
+      - 8000
+
+  # 2. DB SERVICE (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: supersecretpassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    expose:
+      - 5432
+
+  # 3. NGINX SERVICE (Reverse Proxy)
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - web
+
+# Docker volumes for persistent data
+volumes:
+  postgres_data:
