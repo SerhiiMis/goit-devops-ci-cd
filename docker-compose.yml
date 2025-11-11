@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  # 1. WEB SERVICE (Django + Gunicorn)
+  web:
+    build: . # Build using the Dockerfile in the current directory
+    container_name: django_app
+    command: gunicorn my_project.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./project_app:/usr/src/app/
+    # Ensure Django service starts AFTER the database is ready
+    depends_on:
+      - db
+    # We expose this port, but it's only accessed internally by Nginx
+    expose:
+      - 8000
+
+  # 2. DB SERVICE (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: postgres # Matches NAME in settings.py
+      POSTGRES_USER: postgres # Matches USER in settings.py
+      POSTGRES_PASSWORD: supersecretpassword # Matches PASSWORD in settings.py
+    volumes:
+      # Persist data outside the container
+      - postgres_data:/var/lib/postgresql/data/
+    expose:
+      - 5432
+    # Important: This service is only for the Django app; do NOT expose its port to localhost
+
+  # 3. NGINX SERVICE (Reverse Proxy)
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx_proxy
+    # Map container port 80 to host port 80 (http://localhost)
+    ports:
+      - "80:80"
+    volumes:
+      # Mount the custom nginx.conf into the container's configuration path
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      # (Optional) If you were serving static files via Nginx, you would mount them here too
+    depends_on:
+      - web # Nginx must wait for the Django service to be ready
+
+# Docker volumes for persistent data
+volumes:
+  postgres_data:
