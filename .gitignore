@@ -1,8 +1,14 @@
-# Python bytecode
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Python
 __pycache__/
 *.pyc
 
-# Local environment folders
+# Virtual environments
 venv/
 .venv/
 env/
