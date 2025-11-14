@@ -1,8 +1,20 @@
-# Python bytecode
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Terraform providers caches
+.terraform/providers/
+
+# Kubernetes
+.kube/
+
+# Docker
+*.tar
+
+# Python
 __pycache__/
 *.pyc
-
-# Local environment folders
 venv/
 .venv/
-env/
