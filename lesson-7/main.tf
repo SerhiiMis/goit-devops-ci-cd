@@ -39,12 +39,3 @@ module "ecr" {
   scan_on_push= true
 }
 
-module "eks" {
-  source      = "./modules/eks"
-  cluster_name = "lesson-7-eks"
-  vpc_id      = module.vpc.vpc_id
-  private_subnet_ids = module.vpc.private_subnet_ids
-  public_subnet_ids  = module.vpc.public_subnet_ids
-  node_group_desired = 2
-  aws_region = var.aws_region
-}
