@@ -1,11 +1,11 @@
 terraform {
-  required_version = ">= 1.0"
+  required_version = ">= 1.3.0"
 
   backend "s3" {
-    bucket         = var.bucket_name
+    bucket         = "lesson7-terraform-state-serhii-12345"
     key            = "terraform.tfstate"
-    region         = var.aws_region
-    dynamodb_table = var.dynamodb_table_name
+    region         = "us-west-2"
+    dynamodb_table = "terraform-locks"
     encrypt        = true
   }
 }

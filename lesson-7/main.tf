@@ -11,17 +11,12 @@ provider "aws" {
   region = var.aws_region
 }
 
-variable "aws_region" {
-  type    = string
-  default = "eu-central-1"
-}
-
 # modules
 module "s3_backend" {
-  source      = "./modules/s3-backend"
-  bucket_name = "lesson-7-terraform-state-<your-unique>" # optional if module creates; or reuse existing
-  dynamodb_table_name = "terraform-locks"
-  aws_region  = var.aws_region
+  source = "./modules/s3-backend"
+  bucket_name         = var.bucket_name
+  dynamodb_table_name = var.dynamodb_table_name
+  aws_region          = var.aws_region
 }
 
 module "vpc" {
@@ -38,4 +33,3 @@ module "ecr" {
   ecr_name    = "lesson-7-ecr"
   scan_on_push= true
 }
-
