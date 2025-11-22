@@ -1,0 +1,22 @@
+replicaCount: 2
+
+image:
+  repository: 085710281301.dkr.ecr.us-west-2.amazonaws.com/lesson-7-ecr
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+env:
+  DJANGO_ENV: "production"
+  DEBUG: "False"
+  ALLOWED_HOSTS: "*"
