@@ -6,6 +6,7 @@
 
 ## 📂 Структура проекту
 
+```text
 lesson-7/
 ├── main.tf # Головна конфігурація (Providers, Modules, Helm Release)
 ├── outputs.tf # Виводи (Endpoints, URLs)
@@ -19,6 +20,7 @@ lesson-7/
 ├── templates/ # Manifests (Deployment, Service, HPA)
 ├── values.yaml # Конфігурація чарту
 └── Chart.yaml # Метадані чарту
+```
 
 ## 🚀 Передумови (Prerequisites)
 
