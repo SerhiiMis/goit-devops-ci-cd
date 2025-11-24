@@ -10,6 +10,20 @@ module "eks" {
 
   cluster_endpoint_public_access = true
 
+  manage_aws_auth_configmap = true
+
+  access_config = {
+    authentication_mode = "API_AND_CONFIG_MAP"
+  }
+
+  map_roles = [
+    {
+      rolearn  = "arn:aws:iam::085710281301:root" # ВАШ ROOT ARN
+      username = "root"
+      groups   = ["system:masters"]
+    }
+  ]
+
   eks_managed_node_groups = {
     lesson7_nodes = {
       ami_type       = "AL2_x86_64"

@@ -1,0 +1,68 @@
+master:
+  resources:
+    limits:
+      cpu: 1500m
+      memory: 2048Mi
+    requests:
+      cpu: 1000m
+      memory: 1024Mi
+
+  admin:
+    password: "${jenkins_admin_password}"
+
+  serviceAccount:
+    create: true
+    name: jenkins-service-account
+    annotations:
+      eks.amazonaws.com/role-arn: "${jenkins_irsa_role_arn}"
+
+  persistence:
+    enabled: true
+    storageClass: gp2
+    size: 8Gi
+
+installPlugins:
+  - kubernetes:1.37.1
+  - workflow-aggregator:690.v9a_d05770020d
+  - git:5.2.2
+  - aws-credentials:1.30
+
+agent:
+  enabled: true
+  kubernetes:
+    podTemplates:
+      - name: kaniko-builder
+        label: kaniko-builder
+        serviceAccount: jenkins-service-account
+        containers:
+          - name: jnlp
+            image: jenkins/jnlp-agent:4.14.2-2-jdk17
+            imagePullPolicy: IfNotPresent
+            resources:
+              limits:
+                cpu: 500m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 128Mi
+
+          - name: kaniko
+            image: gcr.io/kaniko-project/executor:latest-debug
+            imagePullPolicy: Always
+            command: ["/busybox/cat"]
+            tty: true
+            resources:
+              limits:
+                cpu: 1000m
+                memory: 2048Mi
+              requests:
+                cpu: 500m
+                memory: 1024Mi
+            securityContext:
+              runAsUser: 0
+
+          - name: git
+            image: alpine/git:latest
+            imagePullPolicy: IfNotPresent
+            command: ["/bin/sh", "-c", "cat"]
+            tty: true
