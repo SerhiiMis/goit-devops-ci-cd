@@ -17,3 +17,13 @@ variable "subnet_ids" {
   description = "List of private subnet IDs"
   type        = list(string)
 }
+
+variable "admin_iam_arns" {
+  type    = list(string)
+  default = ["arn:aws:iam::085710281301:root"] # Ваш Root ARN
+}
+
+variable "enable_admin_access" {
+  type    = bool
+  default = true
+}

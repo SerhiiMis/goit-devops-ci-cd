@@ -17,9 +17,7 @@ master:
       eks.amazonaws.com/role-arn: "${jenkins_irsa_role_arn}"
 
   persistence:
-    enabled: true
-    storageClass: gp2
-    size: 8Gi
+    enabled: false
 
 installPlugins:
   - kubernetes:1.37.1

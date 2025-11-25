@@ -12,6 +12,7 @@ resource "helm_release" "jenkins" {
   chart      = "jenkins"
   version    = "12.3.0"
   namespace  = "jenkins"
+  timeout = 900
   create_namespace = false
   
   values = [
@@ -24,6 +25,6 @@ resource "helm_release" "jenkins" {
   
   depends_on = [
     aws_iam_role_policy_attachment.jenkins_ecr_attach,
-    kubernetes_namespace.jenkins 
+    kubernetes_namespace.jenkins
   ]
 }
