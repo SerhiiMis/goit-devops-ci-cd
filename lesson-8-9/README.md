@@ -1,84 +1,41 @@
-# Lesson 7: Kubernetes Cluster with EKS, Terraform, and Helm
+# Lesson 7: Jenkins, Agro CD + CD
 
-![AWS](https://img.shields.io/badge/AWS-EKS-orange) ![Terraform](https://img.shields.io/badge/Terraform-1.6+-purple) ![Helm](https://img.shields.io/badge/Helm-3.0-blue)
+# 🚀 CI/CD Pipeline: Jenkins + Helm + Terraform + Argo CD
 
-Цей проект розгортає інфраструктуру Kubernetes (EKS) на AWS, налаштовує ECR та автоматично деплоїть Django-застосунок за допомогою Helm.
+Цей проєкт реалізує повний GitOps CI/CD пайплайн для Django-застосунку на AWS EKS.
 
-## 📂 Структура проекту
+---
 
-lesson-7/
-├── main.tf # Головна конфігурація (Providers, Modules, Helm Release)
-├── outputs.tf # Виводи (Endpoints, URLs)
-├── modules/ # Локальні модулі
-│ ├── eks/ # Кластер EKS та Node Groups
-│ ├── vpc/ # Мережа (VPC, Subnets, IGW)
-│ ├── ecr/ # Репозиторій Docker образів
-│ └── s3-backend/ # (Опціонально) Зберігання Terraform state
-└── charts/
-└── django-app/ # Helm чарт застосунку
-├── templates/ # Manifests (Deployment, Service, HPA)
-├── values.yaml # Конфігурація чарту
-└── Chart.yaml # Метадані чарту
+## 💡 Схема Пайплайну (GitOps Flow)
 
-## 🚀 Передумови (Prerequisites)
+1. Розробник пушить код у Git.
+2. **Jenkins** (розгорнутий у EKS) ініціює Pipeline:
+   - Збирає Docker-образ за допомогою **Kaniko**.
+   - Пушить образ до **Amazon ECR** (використовуючи IRSA).
+   - Оновлює тег образу у файлі **`lesson-8-9/charts/django-app/values.yaml`** та пушить зміну назад у Git (монорепо).
+3. **Argo CD** (розгорнутий у EKS) постійно моніторить Git-репозиторій.
+4. Argo CD автоматично застосовує оновлений Helm-чарт до кластера EKS.
 
-Перед початком роботи переконайтеся, що у вас встановлені наступні інструменти:
+---
 
-| Інструмент    | Версія     | Примітка                                                  |
-| ------------- | ---------- | --------------------------------------------------------- |
-| **Terraform** | `>= 1.6.0` | Для управління інфраструктурою                            |
-| **AWS CLI**   | `v2`       | Налаштований через `aws configure`                        |
-| **Helm**      | `v3+`      | Для управління релізами Kubernetes                        |
-| **Kubectl**   | `v1.30`    | Клієнт для Kubernetes (має співпадати з версією кластера) |
+## 🛠️ Як Застосувати Terraform
 
-## 🛠 Інструкція по запуску
+Вся інфраструктура (VPC, ECR, EKS, Jenkins, Argo CD) була розгорнута за два етапи, щоб обійти проблеми залежностей провайдерів.
 
-### 1. Ініціалізація
+### 1. Ініціалізація та Розгортання
 
-Завантажте необхідні провайдери та модулі Terraform:
+Виконайте ці команди у папці `lesson-8-9/`:
+
+# 1. Ініціалізація (підключення до S3/DynamoDB бекенду)
 
 ```bash
 terraform init
 ```
 
-### 2. Розгортання (Deploy)
+# 2. Розгортання всієї інфраструктури (EKS, ECR, Jenkins, Argo CD)
 
-Створіть інфраструктуру та запустіть застосунок однією командою.
-
-Примітка: Процес займає 10-15 хвилин, оскільки AWS EKS потребує часу на створення Control Plane.
+# Всі необхідні IAM/Kubernetes-ресурси створюються автоматично.
 
 ```bash
-terraform apply -auto-approve
-```
-
-### 3. Перевірка результату
-
-Після завершення команди apply, отримайте DNS-адресу Load Balancer'а за допомогою AWS CLI:
-
-```bash
-aws elbv2 describe-load-balancers --region us-west-2 --query "LoadBalancers[*].DNSName" --output text
-```
-
-Скопіюйте отримане посилання в браузер. Ви повинні побачити стартову сторінку Django.
-
-## ⚙️ Технічні деталі реалізації
-
-EKS Cluster: Версія 1.30.
-
-Networking: Використовуються Public Subnets для робочих нод.
-
-Це дозволяє нодам мати доступ до Інтернету (для завантаження образів Docker) без необхідності створювати дорогий NAT Gateway.
-
-Використовуються інстанси t3.small.
-
-Економічно ефективні для навчальних цілей та сумісні з більшістю регіонів.
-
-Helm-чарт встановлюється автоматично через Terraform-провайдер helm, використовуючи метод аутентифікації exec. Це найнадійніший спосіб роботи з EKS.
-
-## 🧹 Очищення ресурсів (Destroy)
-
-Щоб зупинити нарахування плати за ресурси AWS (EKS, EC2, Load Balancer), обов'язково виконайте знищення інфраструктури після завершення роботи:
-
-```bash
-terraform destroy -auto-approve
+terraform apply --auto-approve
 ```
