@@ -1,41 +1,68 @@
-# Lesson 7: Jenkins, Agro CD + CD
+# 🏆 Final Project: AWS DevOps Infrastructure
 
-# 🚀 CI/CD Pipeline: Jenkins + Helm + Terraform + Argo CD
+## Архітектура та Компоненти
 
-Цей проєкт реалізує повний GitOps CI/CD пайплайн для Django-застосунку на AWS EKS.
+Цей проєкт розгортає повний стек AWS, використовуючи Terraform, включаючи EKS, CI/CD та Моніторинг.
+
+### 1. Інфраструктурні Модулі
+
+- **VPC:** Налаштована з приватними та публічними підмережами.
+- **EKS:** Kubernetes Cluster з IAM Roles (IRSA) та Worker Nodes.
+- **RDS:** Універсальний модуль (Aurora/Single Instance).
+
+### 2. CI/CD та GitOps
+
+- **ECR:** Docker Registry для зберігання образів.
+- **Jenkins:** Встановлений через Helm, використовує **Kaniko Agent** (для бездокерної збірки) та **IRSA** (для пушу в ECR).
+- **Argo CD:** Встановлений через Helm, використовує **GitOps** (App-of-Apps) для автоматичної синхронізації застосунку.
+
+### 3. Моніторинг та Масштабування
+
+- **Prometheus:** Збір метрик Pod'ів та Node'ів.
+- **Grafana:** Візуалізація метрик (Admin Password: `password123`).
+- **HPA (Horizontal Pod Autoscaler):** Налаштований у Helm-чарті, використовує метрики Pod'ів для автомасштабування застосунку.
 
 ---
 
-## 💡 Схема Пайплайну (GitOps Flow)
+## 🛠️ Інструкція з Розгортання
 
-1. Розробник пушить код у Git.
-2. **Jenkins** (розгорнутий у EKS) ініціює Pipeline:
-   - Збирає Docker-образ за допомогою **Kaniko**.
-   - Пушить образ до **Amazon ECR** (використовуючи IRSA).
-   - Оновлює тег образу у файлі **`lesson-8-9/charts/django-app/values.yaml`** та пушить зміну назад у Git (монорепо).
-3. **Argo CD** (розгорнутий у EKS) постійно моніторить Git-репозиторій.
-4. Argo CD автоматично застосовує оновлений Helm-чарт до кластера EKS.
+### Крок 1: Підготовка
 
----
+1.  **Встановіть залежності:** `aws-cli`, `kubectl`, `helm`, `terraform`.
+2.  Перейдіть у папку проєкту та запустіть ініціалізацію бекенду:
+    ```bash
+    terraform init
+    ```
 
-## 🛠️ Як Застосувати Terraform
+### Крок 2: Розгортання (Single Command)
 
-Вся інфраструктура (VPC, ECR, EKS, Jenkins, Argo CD) була розгорнута за два етапи, щоб обійти проблеми залежностей провайдерів.
-
-### 1. Ініціалізація та Розгортання
-
-Виконайте ці команди у папці `lesson-8-9/`:
-
-#### 1. Ініціалізація (підключення до S3/DynamoDB бекенду)
-
-```bash
-terraform init
-```
-
-#### 2. Розгортання всієї інфраструктури (EKS, ECR, Jenkins, Argo CD)
-
-#### Всі необхідні IAM/Kubernetes-ресурси створюються автоматично.
+Виконайте команду розгортання:
 
 ```bash
 terraform apply --auto-approve
+```
+
+### Крок 3: Перевірка Доступу (Після Apply)
+
+Після успішного розгортання отримайте кінцеві точки:
+
+| Компонент        | Команда для отримання URL / Пароля                                                                          |
+| ---------------- | ----------------------------------------------------------------------------------------------------------- |
+| Jenkins URL      | `kubectl get svc jenkins -n jenkins -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"`               |
+| Argo CD URL      | `kubectl get svc argo-cd-argocd-server -n argocd -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"`  |
+| Grafana URL      | `kubectl get svc prometheus-grafana -n monitoring -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"` |
+| Argo CD Password | `kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}"`                   |
+
+## 📝 Демонстрація CI/CD
+
+Jenkins Pipeline (Jenkinsfile): Налаштований для збірки образу, пушу в ECR та оновлення тегу в Git.
+
+Argo CD: Моніторить charts/django-app і забезпечує GitOps синхронізацію.
+
+## 🗑️ Видалення Інфраструктури
+
+Обов'язково видаліть ресурси після перевірки, щоб уникнути витрат:
+
+```bash
+terraform destroy --auto-approve
 ```
