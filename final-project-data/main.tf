@@ -53,13 +53,6 @@ provider "helm" {
   }
 }
 
-module "s3_backend" {
-  source              = "./modules/s3-backend"
-  bucket_name         = var.bucket_name
-  dynamodb_table_name = var.dynamodb_table_name
-  aws_region          = var.aws_region
-}
-
 module "vpc" {
   source             = "./modules/vpc"
   vpc_cidr_block     = "10.0.0.0/16"
@@ -88,7 +81,7 @@ module "rds" {
     vpc_id             = module.vpc.vpc_id
     private_subnet_ids = module.vpc.private_subnets 
     master_password    = random_password.db_master.result
-    # ... інші змінні RDS (db_name, instance_class, use_aurora)
+    
 }
 
 module "monitoring" {
@@ -130,4 +123,10 @@ module "argo_cd" {
   aws_region          = var.aws_region
   helm_chart_repo_url = "https://github.com/SerhiiMis/goit-devops-ci-cd.git"
   depends_on          = [module.eks]
+}
+
+resource "random_password" "db_master" {
+  length           = 16
+  special          = true
+  override_special = "!#$%&*()_+"
 }
