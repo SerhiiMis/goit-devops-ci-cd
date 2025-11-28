@@ -1,0 +1,16 @@
+defaultRules:
+  create: true
+
+grafana:
+  enabled: true
+  adminPassword: "password123"
+  service:
+    type: LoadBalancer
+  persistence:
+    enabled: true
+    storageClassName: "gp2"
+    size: 5Gi
+
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
