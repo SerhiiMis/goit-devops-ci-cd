@@ -55,7 +55,7 @@ resource "aws_security_group" "db_sg" {
 # 3. Parameter Group (для звичайної RDS Instance)
 resource "aws_db_parameter_group" "db_pg_single" {
   count       = var.use_aurora ? 0 : 1
-  name_prefix = "${var.db_name}-pg-single-"
+  name_prefix = "${replace(var.db_name, "_", "-")}-pg-single-"
   family      = local.final_db_family
 
   parameter {
@@ -74,7 +74,7 @@ resource "aws_db_parameter_group" "db_pg_single" {
 # 4. Parameter Group (для Aurora Cluster)
 resource "aws_rds_cluster_parameter_group" "db_pg_cluster" {
   count       = var.use_aurora ? 1 : 0
-  name_prefix = "${var.db_name}-pg-cluster-"
+  name_prefix = "${replace(var.db_name, "_", "-")}-pg-cluster-"
   family      = local.final_db_family
 
   parameter {
